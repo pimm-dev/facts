@@ -1,0 +1,24 @@
+name: Build Docs
+
+permissions:
+  contents: write
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install the latest version of rye
+        uses: eifinger/setup-rye@v4
+      - run: |
+          cd .github/markdown_merger
+          rye sync
+      - name: Commit build
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          diffs=$(git diff .)
+          [ "$diffs" != "null" -a -n "$diffs" ] && { git add .; git commit -m "Build document" -m "`date`"; git push; } || echo "No diffs. Progress skipped."
